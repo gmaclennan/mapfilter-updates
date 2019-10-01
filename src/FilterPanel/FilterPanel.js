@@ -1,7 +1,8 @@
 // @flow
-import React, { useMemo, useEffect } from 'react'
+import React, { useMemo, useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
+import Button from '@material-ui/core/Button'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
@@ -27,6 +28,15 @@ import type {
 } from '../types'
 import type { Observation, Preset } from 'mapeo-schema'
 
+export type EditProps = {
+  // Show in edit mode (collapsed with checkbox to turn filter on/off)
+  edit?: boolean,
+  // Whether it is selected
+  selected?: boolean,
+  // Called when the selected state changes
+  onToggle?: () => void
+}
+
 type Props = {
   filter: Filter | null,
   onChangeFilter: (filter: Filter | null) => void,
@@ -38,6 +48,7 @@ type Props = {
 const m = defineMessages({
   // Button text to change which fields are shown and filterable in the filter pane
   editFilters: 'Edit Filters…',
+  doneEditing: 'Done',
   // Label for filter by date observation was created
   created: 'Created',
   // Label for filter by date observation was modified (e.g. edited by a user)
@@ -71,6 +82,7 @@ const FilterPanel = ({
 }: Props) => {
   const cx = useStyles()
   const { formatMessage: t } = useIntl()
+  const [editing, setEditing] = useState()
   const [visibleFilters, setVisibleFilters] = useVisibleFilters<string[]>([
     JSON.stringify(['$created']),
     JSON.stringify(['$preset'])
@@ -222,6 +234,8 @@ const FilterPanel = ({
                     filter={filterByField[fieldId]}
                     options={field.options}
                     onChangeFilter={handleChangeFilter(fieldId)}
+                    edit={editing}
+                    selected={visibleFilters.includes(id)}
                   />
                 )
               case 'date':
@@ -234,18 +248,21 @@ const FilterPanel = ({
                     min={field.min_value || '2001-01-01'}
                     max={field.max_value || new Date().toISOString()}
                     onChangeFilter={handleChangeFilter(fieldId)}
+                    edit={editing}
+                    selected={visibleFilters.includes(id)}
                   />
                 )
             }
           })
           .filter(Boolean)}
-        <ListItem button dense className={cx.settingsItem}>
-          <ListItemIcon className={cx.listIcon}>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText primary={<FormattedMessage {...m.editFilters} />} />
-        </ListItem>
       </List>
+      <Button
+        onClick={() => setEditing(state => !state)}
+        color={editing ? 'primary' : 'default'}
+        variant={editing ? 'contained' : 'text'}
+        className={cx.settingsButton}>
+        <FormattedMessage {...m[editing ? 'doneEditing' : 'editFilters']} />
+      </Button>
     </Paper>
   )
 }
@@ -343,6 +360,9 @@ function combineOptionsWithStats(
 
 const useStyles = makeStyles(theme => ({
   root: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
     minWidth: 300,
     flex: 1,
     overflowY: 'auto',
@@ -355,9 +375,10 @@ const useStyles = makeStyles(theme => ({
   list: {
     paddingTop: 0
   },
-  settingsItem: {
-    paddingTop: 8,
-    paddingBottom: 8
+  settingsButton: {
+    marginTop: 8,
+    marginBottom: 8,
+    alignSelf: 'center'
   },
   listIcon: {
     minWidth: 40

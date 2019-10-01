@@ -13,6 +13,7 @@ import OnlyButton from './OnlyButton'
 import { getField } from '../lib/data_analysis'
 import FormattedValue from '../internal/FormattedValue'
 import type { Key, Filter, SelectOptions, SelectableFieldValue } from '../types'
+import type { EditProps } from './FilterPanel'
 
 // import {FIELD_TYPE_BOOLEAN, FIELD_TYPE_NUMBER} from '../../constants'
 
@@ -44,6 +45,7 @@ const FilterItem = ({ onClick, checked, label, id, onOnlyClick }) => {
 }
 
 type Props = {
+  ...$Exact<EditProps>,
   label: React.Node,
   fieldKey: Key,
   filter?: Filter | null,
@@ -56,7 +58,8 @@ const DiscreteFilter = ({
   fieldKey,
   filter,
   options,
-  onChangeFilter
+  onChangeFilter,
+  ...editProps
 }: Props) => {
   const values: Array<number | string | boolean> = options.reduce(
     (acc, cur) => {
@@ -93,7 +96,8 @@ const DiscreteFilter = ({
       title={label}
       icon={<ListIcon />}
       isFiltered={!!filter}
-      onShowAllClick={() => onChangeFilter(null)}>
+      onShowAllClick={() => onChangeFilter(null)}
+      {...editProps}>
       {allValues.map((v, i) => {
         // TODO use FormattedValue here
         const option = options.find(

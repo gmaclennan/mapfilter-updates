@@ -10,6 +10,7 @@ import { parseDateString } from '../utils/helpers'
 import FilterSection from './FilterSection'
 import DateField from '../ObservationDialog/DateField'
 import type { Key, Filter } from '../types'
+import type { EditProps } from './FilterPanel'
 
 const m = defineMessages({
   // Title of min date field in filter
@@ -19,6 +20,7 @@ const m = defineMessages({
 })
 
 type Props = {
+  ...$Exact<EditProps>,
   label: React.Node,
   fieldKey: Key,
   filter?: Filter | null,
@@ -33,7 +35,8 @@ const DateFilter = ({
   filter,
   min,
   max,
-  onChangeFilter
+  onChangeFilter,
+  ...editProps
 }: Props) => {
   const cx = useStyles()
   const { formatMessage: t } = useIntl()
@@ -56,7 +59,8 @@ const DateFilter = ({
       title={label}
       icon={<DateIcon />}
       isFiltered={isFiltered}
-      onShowAllClick={() => onChangeFilter(null)}>
+      onShowAllClick={() => onChangeFilter(null)}
+      {...editProps}>
       <ListItem>
         <DateField
           minDate={parseDateString(min)}

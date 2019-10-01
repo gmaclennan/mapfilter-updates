@@ -7,10 +7,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import Collapse from '@material-ui/core/Collapse'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import { Checkbox } from '@material-ui/core'
 
 import ShowAllButton from './ShowAllButton'
+import type { EditProps } from './FilterPanel'
 
 type Props = {
+  ...$Exact<EditProps>,
   icon: React.Node,
   title: React.Node,
   subtitle?: React.Node,
@@ -24,13 +27,17 @@ const useToggle = (initialState?: boolean) => {
   const toggle = React.useCallback(() => setState(state => !state), [])
   return [state, toggle]
 }
+
 const FilterSection = ({
   icon,
   title,
   subtitle,
   isFiltered,
   children,
-  onShowAllClick
+  onShowAllClick,
+  edit = false,
+  selected = false,
+  onToggle = () => {}
 }: Props) => {
   const cx = useStyles()
   const [expanded, toggleExpanded] = useToggle(true)
@@ -41,15 +48,22 @@ const FilterSection = ({
   }
   return (
     <div className={cx.root}>
-      <ListItem button={!isFiltered} onClick={toggleExpanded}>
+      <ListItem
+        button={edit ? false : !isFiltered}
+        onClick={edit ? undefined : toggleExpanded}>
         <ListItemIcon className={cx.listIcon}>{icon}</ListItemIcon>
         <ListItemText
           classes={{ primary: cx.listItemText }}
           primary={title}
           secondary={subtitle}
         />
-
-        {isFiltered ? (
+        {edit ? (
+          <Checkbox
+            checked={selected}
+            onClick={onToggle}
+            className={cx.selectCheck}
+          />
+        ) : isFiltered ? (
           <ShowAllButton onClick={handleShowAllClick} className={cx.showAll} />
         ) : (
           <ExpandMoreIcon
@@ -60,7 +74,7 @@ const FilterSection = ({
         )}
       </ListItem>
       <Collapse
-        in={expanded || isFiltered}
+        in={edit ? false : expanded || isFiltered}
         classes={{ wrapperInner: cx.collapse }}
         unmountOnExit>
         {children}
@@ -81,6 +95,9 @@ const useStyles = makeStyles(theme => ({
   },
   listItemText: {
     fontWeight: 500
+  },
+  selectCheck: {
+    padding: 0
   },
   showAll: {
     fontSize: 12,
